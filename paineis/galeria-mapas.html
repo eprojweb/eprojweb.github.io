@@ -196,7 +196,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .prog i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .cft{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:10px;min-width:0}
 .code{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.go{margin-left:auto;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--accent);font-weight:600;font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;white-space:nowrap}
+.go{margin-left:auto;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--accent);font-weight:600;font-size:13px;padding:3px 10px;border-radius:20px;border:1px solid var(--line);background:var(--surface);cursor:pointer;white-space:nowrap}
 .go:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .go.solid{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);padding:10px 16px;font-size:14.5px}
 
@@ -1159,6 +1159,11 @@ function prep(json) {
     const dx = new Map(); for (const p of r.ins) if (p.r !== r && p.r.dep) dx.set(p.r.dep, (dx.get(p.r.dep) || 0) + p.x); if (dx.size) r.depx = dx;
   }
   for (const r of ROWS) if (r.x == null) r.x = r.xp;
+  /* municipios de uma iniciativa, para fins de filtro por lugar (Regiões/Associações/município): a uniao do
+     municipio do projeto com os municipios de todos os instrumentos vinculados a ele -- sem isso, um projeto
+     sem municipio proprio mas com instrumento (TR) localizado sumia da lista ao filtrar por lugar, mesmo
+     contando no total do painel lateral (que soma pelas pecas, nao pela linha inteira) */
+  for (const r of ROWS) { const s = new Set(r.mc); if (r.ins) for (const p of r.ins) for (const c of p.mc) s.add(c); r.mcAll = [...s]; }
   /* peças do mapa e do painel */
   PIECES = [];
   for (const r of ROWS) {
@@ -1212,16 +1217,27 @@ function update() {
     if (!okArea) continue;
     A.v += v; A.n++; if (p.st === 0) A.and++; else if (p.st === 1) A.con++;
   }
-  /* lista: iniciativas inteiras (projeto com seus instrumentos), com o valor executado */
+  /* lista: iniciativas inteiras (projeto com seus instrumentos), com o valor executado.
+     o valor de cada iniciativa no lugar filtrado e a soma das suas pecas (peca propria + instrumentos)
+     que pertencem a esse lugar -- igual ao que PIECES usa para o painel/mapa -- e nao um "share" unico
+     aplicado ao total da iniciativa, que sub-representava o valor quando os instrumentos de um projeto
+     ficam em municipios diferentes do municipio do proprio projeto */
   const list = [];
   for (const r of ROWS) {
     if (!stOk(r) || !yrOk(r.yr)) continue;
     if (S.area != null && r.a !== S.area) continue;
     if (![...r.tags].some(k => S.tipos.has(k))) continue;
-    const { share, here, sw } = shareOf(r.mc);
-    if (sw && cods && !S.incState) continue;
-    if (!here && !sw) continue;
-    list.push({ r, share: sw ? 1 : share, v: r.x * (sw ? 1 : share) });
+    const pecas = (r.ins && r.ins.length) ? [...r.ins, { mc: r.mc, x: r.xrest }] : [{ mc: r.mc, x: r.x }];
+    let v = 0, incluiu = false;
+    for (const pc of pecas) {
+      const { share, here, sw } = shareOf(pc.mc);
+      if (sw && cods && !S.incState) continue;
+      if (!here && !sw) continue;
+      v += pc.x * (sw ? 1 : share); incluiu = true;
+    }
+    if (!incluiu || v <= 0) continue;
+    const { share, sw } = shareOf(r.mcAll);
+    list.push({ r, share: sw ? 1 : share, v });
   }
   for (const m of MUN.values()) if (m.par && mun.has(m.cod)) { const o = mun.get(m.cod); let p = mun.get(m.par); if (!p) mun.set(m.par, p = { v: 0, n: 0 }); p.v += o.v; p.n += o.n; }
   AGG = { mun };
@@ -1451,7 +1467,7 @@ function copy(code, sys) {
 let tt; function toast(m) { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 3600); }
 function goLink(r, cls, short) {
   const L = LINKS[r.o], a = el("a", "go" + (cls ? " " + cls : "")), direct = projetaUrl(r); a.href = direct || L.base; a.target = "_blank"; a.rel = "noopener";
-  a.textContent = (short ? "" : direct || r.o !== "P" ? "Abrir no " : "Buscar no ") + L.nome + " ↗"; if (!direct && r.o === "P") a.title = "Link direto ainda não cadastrado: abre o Projeta SC e copia o código para a busca"; a.addEventListener("click", e => { e.stopPropagation(); if (!direct && r.cod) copy(r.cod, L.nome); });
+  a.textContent = (short ? "" : "") + L.nome + " ↗"; if (!direct && r.o === "P") a.title = "Link direto ainda não cadastrado: abre o Projeta SC e copia o código para a busca"; a.addEventListener("click", e => { e.stopPropagation(); if (!direct && r.cod) copy(r.cod, L.nome); });
   return a;
 }
 function tag(r) { const w = el("span", "tags"); for (const k of TAG_ORDER) if (r.tags.has(k)) { const t = el("span", "tag", TIPO_SHORT[k]); t.style.background = `var(--t${k})`; if (isDark()) t.style.color = "#0b1220"; w.append(t); } return w; }
@@ -1462,7 +1478,7 @@ const parteTxt = r => porLabel(r) || "Valor executado em " + placeName() + " (di
 function trLink(r, short) {
   const L = r.trLinks, a = el("a", "go");
   if (L.length === 1 && isTE(L[0].num)) return tevLink(L[0].num, short ? "Painel TEV ↗" : "Abrir no painel das Transferências Especiais ↗");
-  if (L.length === 1) { const n = L[0].num, te = isTE(n); a.href = te ? LINKS.T.base : trUrl(n); a.target = "_blank"; a.rel = "noopener"; a.textContent = (short ? "" : te ? "Buscar no " : "Abrir no ") + "SC Transferências ↗"; a.title = te ? "Transferência especial " + n + ": abre a consulta do SC Transferências e copia o número para a busca" : "Transferência " + n; a.addEventListener("click", e => { e.stopPropagation(); if (te) copy(n, LINKS.T.nome); }); }
+  if (L.length === 1) { const n = L[0].num, te = isTE(n); a.href = te ? LINKS.T.base : trUrl(n); a.target = "_blank"; a.rel = "noopener"; a.textContent = "SC Transferências ↗"; a.title = te ? "Transferência especial " + n + ": abre a consulta do SC Transferências e copia o número para a busca" : "Transferência " + n; a.addEventListener("click", e => { e.stopPropagation(); if (te) copy(n, LINKS.T.nome); }); }
   else { a.href = "#"; a.textContent = int(L.length) + " transferências"; a.title = "Ver as transferências associadas a este projeto"; }
   return a;
 }
@@ -1549,7 +1565,6 @@ function detail(r, share, v) {
   if (r.ct) inn.append(ctSection(r));
   const acts = el("div", "acts"); acts.append(goLink(r, "solid"));
   if (r.trLinks && r.trLinks.length === 1) acts.append(trLink(r));
-  if (r.cod) { const cp = el("button", "go", "Copiar código"); cp.type = "button"; cp.addEventListener("click", () => copy(r.cod, LINKS[r.o].nome)); acts.append(cp); }
   inn.append(acts, el("p", "hint", temFoto(r) ? "Foto de capa do projeto no Projeta SC." : "Imagem ilustrativa: esta iniciativa não tem foto cadastrada no sistema de origem."));
   dlg.append(x, ph, gal, inn);
   ov.hidden = false; document.body.style.overflow = "hidden"; dlg.scrollTop = 0; x.focus();
