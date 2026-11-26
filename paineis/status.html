@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Status dos Paineis EPROJ/SC</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root { color-scheme: light; }
+  body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; max-width: 980px; margin: 32px auto; padding: 0 20px; color: #1a1a1a; background: #fafafa; }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .sub { color: #666; font-size: .9rem; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-bottom: 36px; }
+  .card { background: #fff; border: 1px solid #e3e3e3; border-radius: 10px; padding: 14px 16px; border-left: 5px solid #999; }
+  .card.ok { border-left-color: #2e9e4f; }
+  .card.erro { border-left-color: #d64545; }
+  .card.semdados { border-left-color: #bbb; }
+  .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+  .badge { display: inline-block; font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; }
+  .badge.ok { background: #e6f6ea; color: #1e7a37; }
+  .badge.erro { background: #fbe9e9; color: #b32424; }
+  .badge.semdados { background: #eee; color: #777; }
+  .meta { font-size: .82rem; color: #555; margin-top: 8px; line-height: 1.5; }
+  .meta b { color: #222; }
+  .erro-msg { margin-top: 8px; font-size: .78rem; color: #8a2222; background: #fff3f3; border-radius: 6px; padding: 6px 8px; white-space: pre-wrap; font-family: ui-monospace, Consolas, monospace; max-height: 140px; overflow: auto; }
+  a.pub { font-size: .82rem; }
+  details { margin-bottom: 28px; }
+  summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .82rem; margin-top: 6px; }
+  th, td { border-bottom: 1px solid #eee; padding: 5px 8px; text-align: left; }
+  th { color: #666; font-weight: 600; }
+  tr.erro td { color: #b32424; }
+  footer { color: #999; font-size: .78rem; margin-top: 40px; }
+</style>
+</head>
+<body>
+<h1>Status dos Paineis EPROJ/SC</h1>
+<div class="sub">Gerado em 26/11/2026 13:50 a partir do historico de execucoes (rodar_todos.py)</div>
+
+<div class="grid">
+<div class="card ok">
+  <h3>GALERIA_MAPAS <span class="badge ok">OK</span></h3>
+  <div class="meta">Ultima rodada: <b>26/11/2026 13:48</b></div>
+  <div class="meta">Publicado: <a class="pub" href="https://eprojweb.github.io/paineis/galeria-mapas.html" target="_blank">https://eprojweb.github.io/paineis/galeria-mapas.html</a></div>
+  
+</div>
+<div class="card ok">
+  <h3>SEPLAN <span class="badge ok">OK</span></h3>
+  <div class="meta">Ultima rodada: <b>26/11/2026 13:49</b></div>
+  <div class="meta">Publicado: <a class="pub" href="https://eprojweb.github.io/paineis/seplan.html" target="_blank">https://eprojweb.github.io/paineis/seplan.html</a></div>
+  
+</div>
+</div>
+
+<details>
+<summary>GALERIA_MAPAS — historico (5 execucoes registradas)</summary>
+<table><thead><tr><th>Quando</th><th>Status</th><th>Publicou</th></tr></thead><tbody><tr class=""><td>26/11/2026 13:48</td><td>OK</td><td>sim</td></tr><tr class="erro"><td>26/11/2026 13:43</td><td>ERRO (1)</td><td>-</td></tr><tr class=""><td>26/11/2026 16:42</td><td>OK</td><td>-</td></tr><tr class=""><td>25/11/2026 21:09</td><td>OK</td><td>-</td></tr><tr class=""><td>25/11/2026 21:08</td><td>OK</td><td>-</td></tr></tbody></table>
+</details>
+<details>
+<summary>SEPLAN — historico (5 execucoes registradas)</summary>
+<table><thead><tr><th>Quando</th><th>Status</th><th>Publicou</th></tr></thead><tbody><tr class=""><td>26/11/2026 13:49</td><td>OK</td><td>sim</td></tr><tr class=""><td>26/11/2026 13:44</td><td>OK</td><td>-</td></tr><tr class=""><td>26/11/2026 16:43</td><td>OK</td><td>-</td></tr><tr class=""><td>25/11/2026 21:09</td><td>OK</td><td>-</td></tr><tr class=""><td>25/11/2026 21:08</td><td>OK</td><td>-</td></tr></tbody></table>
+</details>
+
+<footer>Pagina gerada automaticamente a cada rodada agendada. Nao reflete o conteudo dos paineis, so se a atualizacao rodou com sucesso.</footer>
+</body>
+</html>
